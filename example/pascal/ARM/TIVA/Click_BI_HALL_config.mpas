@@ -1,0 +1,5 @@
+unit Click_BI_HALL_config;
+
+uses Click_BI_HALL_types;
+
+end.

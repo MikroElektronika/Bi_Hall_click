@@ -1,0 +1,5 @@
+module Click_BI_HALL_config
+
+include Click_BI_HALL_types
+
+end.

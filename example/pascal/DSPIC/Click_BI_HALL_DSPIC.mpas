@@ -1,0 +1,91 @@
+{*
+Example for BI_HALL Click
+
+    Date          : Oct 2018.
+    Author        : Nenad Filipovic
+
+Test configuration dsPIC :
+    
+    MCU                : P33FJ256GP710A
+    Dev. Board         : EasyPIC Fusion v7
+    dsPIC Compiler ver : v7.1.0.0
+
+---
+
+Description :
+
+The application is composed of three sections :
+
+- System Initialization - Initializes GPIO and LOG, set INT pin as input.
+- Application Initialization - Initialization driver enable's - GPIO and start write log.
+- Application Task - (code snippet) This is a example which demonstrates the use of BI HALL Click board.
+     Detect the south & north pole magnetic fields near the BI HALL Click.
+     Results are being sent to the Usart Terminal where you can track their changes.
+     All data logs on usb uart when magnetic field is detected.
+
+Additional Functions :
+
+- UART
+
+*}
+program Click_BI_HALL_DSPIC;
+
+uses Click_BI_HALL_types, Click_BI_HALL_config;
+
+var
+    bihallState : uint8_t; 
+    bihallStateOld : uint8_t; 
+    
+procedure systemInit(); 
+begin
+
+    mikrobus_gpioInit(_MIKROBUS1, _MIKROBUS_INT_PIN, _GPIO_INPUT); 
+    mikrobus_logInit(_MIKROBUS2, 9600); 
+    Delay_100ms(); 
+
+end;
+
+procedure applicationInit(); 
+begin
+
+    bihall_gpioDriverInit(T_BIHALL_P(@_MIKROBUS1_GPIO)); 
+    mikrobus_logWrite('---------------------------', _LOG_LINE); 
+    mikrobus_logWrite('       Initialization      ', _LOG_LINE); 
+    mikrobus_logWrite('---------------------------', _LOG_LINE); 
+    mikrobus_logWrite(' Detecting magnetic fields ', _LOG_LINE); 
+    mikrobus_logWrite('---------------------------', _LOG_LINE); 
+    Delay_100ms(); 
+
+end;
+
+procedure applicationTask(); 
+begin
+
+    bihallState := bihall_detectingMagneticFields(); 
+    if (((bihallState = 1) and (bihallStateOld = 0))) then 
+    begin
+        bihallStateOld := 1; 
+        mikrobus_logWrite('         ~ SOUTH ~         ', _LOG_LINE); 
+        mikrobus_logWrite('', _LOG_LINE); 
+    end; 
+    if (((bihallState = 0) and (bihallStateOld = 1))) then 
+    begin
+        mikrobus_logWrite('         ~ NORTH ~         ', _LOG_LINE); 
+        mikrobus_logWrite('', _LOG_LINE); 
+        bihallStateOld := 0; 
+    end; 
+
+end;
+
+begin
+    bihallState := 0;
+    bihallStateOld := 0;
+
+    systemInit(); 
+    applicationInit(); 
+    while (1) do 
+    begin 
+        applicationTask(); 
+    end;
+
+end.
